@@ -9,6 +9,13 @@ type Point = {
   y: number
 }
 
+type NewPoint = {
+  x: number
+  y: number
+  xd: number
+  yd: number
+}
+
 type Shelf = {
   position: [Point, Point, Point, Point]
   id: string
@@ -20,14 +27,14 @@ const Img = ({ url }: { url: string }) => {
 }
 
 const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
-  const [annotations, setAnnotations] = useState<Shelf[]>([])
-  const [newAnnotation, setNewAnnotation] = useState([])
+  const [shelves, setShelves] = useState<Shelf[]>([])
+  const [newShelf, setNewShelf] = useState<NewPoint | null>(null)
   const timer = useRef<number | null>(null)
 
   const handleMouseDown = (event: MouseEvent) => {
-    if (newAnnotation.length === 0) {
-      const { x, y } = event.target.getStage().getPointerPosition()
-      setNewAnnotation([{ x, y, width: 0, height: 0, key: "0" }])
+    if (!newShelf) {
+      const { x, y } = event.target.getStage().getPointerPosition() as Point
+      setNewShelf({ x, y, xd: 0, yd: 0 })
       timer.current = new Date().getTime()
     }
   }
@@ -38,12 +45,12 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     const diff = now - timer.current
     if (diff < 300) {
       timer.current = null
-      setNewAnnotation([])
+      setNewShelf(null)
       return
     }
-    if (newAnnotation.length === 1) {
-      const sx = newAnnotation[0].x
-      const sy = newAnnotation[0].y
+    if (newShelf) {
+      const sx = newShelf.x
+      const sy = newShelf.y
       console.log({ sx, sy })
       const { x, y } = event.target.getStage().getPointerPosition() as Point
       const annotationToAdd: Shelf = {
@@ -55,32 +62,29 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
         ],
         id: `${new Date().getTime()}`,
       }
-      annotations.push(annotationToAdd)
-      setNewAnnotation([])
-      setAnnotations(annotations)
+      shelves.push(annotationToAdd)
+      setNewShelf(null)
+      setShelves(shelves)
     }
   }
 
-  console.log({ annotations })
+  console.log({ annotations: shelves })
 
   const handleMouseMove = (event) => {
-    if (newAnnotation.length === 1) {
-      const sx = newAnnotation[0].x
-      const sy = newAnnotation[0].y
+    if (newShelf) {
+      const sx = newShelf.x
+      const sy = newShelf.y
       const { x, y } = event.target.getStage().getPointerPosition()
-      setNewAnnotation([
-        {
-          x: sx,
-          y: sy,
-          width: x - sx,
-          height: y - sy,
-          key: "0",
-        },
-      ])
+      setNewShelf({
+        x: sx,
+        y: sy,
+        xd: x - sx,
+        yd: y - sy,
+      })
     }
   }
 
-  const annotationsToDraw = [...annotations, ...newAnnotation]
+  // const annotationsToDraw = [...shelves, ...newShelf]
   return (
     <Stage
       onMouseDown={handleMouseDown}
@@ -91,22 +95,23 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     >
       <Layer>
         <Img url={imageUrl} />
-        {newAnnotation.map((value) => (
+        {newShelf && (
           <Rect
-            x={value.x}
-            y={value.y}
-            width={value.width}
-            height={value.height}
+            x={newShelf.x}
+            y={newShelf.y}
+            width={newShelf.xd}
+            height={newShelf.yd}
             fill="transparent"
             stroke="black"
             onMouseDown={() => {
               console.log("clicked rect")
             }}
           />
-        ))}
-        {annotations.map((value) => {
+        )}
+        {shelves.map((value) => {
           return (
             <Shape
+              key={value.id}
               sceneFunc={(context, shape) => {
                 context.beginPath()
                 const [first, ...positions] = value.position
