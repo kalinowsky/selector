@@ -21,6 +21,14 @@ type Shelf = {
   id: string
 }
 
+type KonvaExtendedMouseEvent = MouseEvent & {
+  target: {
+    getStage: () => {
+      getPointerPosition: () => Point
+    }
+  }
+}
+
 const Img = ({ url }: { url: string }) => {
   const [image] = useImage(url)
   return <Image image={image} />
@@ -31,15 +39,15 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   const [newShelf, setNewShelf] = useState<NewPoint | null>(null)
   const timer = useRef<number | null>(null)
 
-  const handleMouseDown = (event: MouseEvent) => {
+  const handleMouseDown = (event: KonvaExtendedMouseEvent) => {
     if (!newShelf) {
-      const { x, y } = event.target.getStage().getPointerPosition() as Point
+      const { x, y } = event.target.getStage().getPointerPosition()
       setNewShelf({ x, y, xd: 0, yd: 0 })
       timer.current = new Date().getTime()
     }
   }
 
-  const handleMouseUp = (event: MouseEvent) => {
+  const handleMouseUp = (event: KonvaExtendedMouseEvent) => {
     if (timer.current === null) return
     const now = new Date().getTime()
     const diff = now - timer.current
@@ -52,7 +60,7 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
       const sx = newShelf.x
       const sy = newShelf.y
       console.log({ sx, sy })
-      const { x, y } = event.target.getStage().getPointerPosition() as Point
+      const { x, y } = event.target.getStage().getPointerPosition()
       const annotationToAdd: Shelf = {
         position: [
           { x, y },
@@ -70,7 +78,7 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
   console.log({ annotations: shelves })
 
-  const handleMouseMove = (event) => {
+  const handleMouseMove = (event: KonvaExtendedMouseEvent) => {
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
@@ -84,7 +92,6 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     }
   }
 
-  // const annotationsToDraw = [...shelves, ...newShelf]
   return (
     <Stage
       onMouseDown={handleMouseDown}
