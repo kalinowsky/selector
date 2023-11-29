@@ -36,6 +36,7 @@ const Img = ({ url }: { url: string }) => {
 
 const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   const [shelves, setShelves] = useState<Shelf[]>([])
+  const [activeShelf, setActiveShelf] = useState<Shelf | null>(null)
   const [newShelf, setNewShelf] = useState<NewPoint | null>(null)
   const timer = useRef<number | null>(null)
 
@@ -92,6 +93,13 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     }
   }
 
+  const onActivate = (shelfId: string) => {
+    const activeShelf = shelves.find((s) => s.id === shelfId)
+    if (!activeShelf) return
+    setShelves((shelves) => shelves.filter((s) => s.id !== shelfId))
+    setActiveShelf(activeShelf)
+  }
+
   return (
     <Stage
       onMouseDown={handleMouseDown}
@@ -100,7 +108,12 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
       width={900}
       height={700}
     >
-      <Layer>
+      <Layer
+        onClick={() => {
+          if (activeShelf) setShelves((shelves) => [...shelves, activeShelf])
+          setActiveShelf(null)
+        }}
+      >
         <Img url={imageUrl} />
         {newShelf && (
           <Rect
@@ -115,7 +128,7 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
             }}
           />
         )}
-        {shelves.map((value) => {
+        {[...shelves, ...(activeShelf ? [activeShelf] : [])].map((value) => {
           return (
             <Shape
               key={value.id}
@@ -132,11 +145,31 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
               stroke="black"
               strokeWidth={4}
               onMouseDown={() => {
-                console.log(`myszka tu ${value.id}`)
+                onActivate(value.id)
               }}
             />
           )
         })}
+        {activeShelf && (
+          <Shape
+            key={activeShelf.id}
+            sceneFunc={(context, shape) => {
+              context.beginPath()
+              const [first, ...positions] = activeShelf.position
+              context.moveTo(first.x, first.y)
+              positions.forEach((position) => context.lineTo(position.x, position.y))
+              context.closePath()
+              context.fillStrokeShape(shape)
+            }}
+            fill="#00D2FF"
+            opacity={1}
+            stroke="black"
+            strokeWidth={4}
+            onMouseDown={() => {
+              // onActivate(value.id)
+            }}
+          />
+        )}
       </Layer>
     </Stage>
   )
