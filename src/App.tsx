@@ -1,5 +1,5 @@
 import "./App.css"
-import { Selector } from "./components/Selector/Selector"
+import { Selector } from "./components/Selector"
 import { Shelf } from "./components/Selector/types"
 
 const IMAGE_URL =
