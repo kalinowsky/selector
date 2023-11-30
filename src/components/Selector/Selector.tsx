@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { Circle, Image, Layer, Rect, Shape, Stage } from "react-konva"
 import Konva from "konva"
 import useImage from "use-image"
+import { PreviewStage } from "./PreviewStage"
 
 type Point = {
   x: number
@@ -29,7 +30,7 @@ type KonvaExtendedMouseEvent = MouseEvent & {
   }
 }
 
-const Img = ({ url }: { url: string }) => {
+export const Img = ({ url }: { url: string }) => {
   const [image] = useImage(url)
   return <Image image={image} />
 }
@@ -224,9 +225,6 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
                 opacity={1}
                 stroke="black"
                 strokeWidth={4}
-                onMouseDown={() => {
-                  // onActivate(value.id)
-                }}
               />
               {activeShelf.position.map((point) => (
                 <Circle
@@ -245,89 +243,18 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
               ))}
             </>
           )}
-          {/* <Image image={} /> */}
         </Layer>
       </Stage>
       <div style={{ position: "absolute", top: "0", left: "0" }}>
-        <Stage width={250} height={250} scaleX={2} scaleY={2} offsetX={pointer?.x - 62} offsetY={pointer?.y - 62}>
-          <Layer>
-            <Img url={imageUrl} />
-            {newShelf && (
-              <Rect
-                x={newShelf.x}
-                y={newShelf.y}
-                width={newShelf.xd}
-                height={newShelf.yd}
-                fill="transparent"
-                stroke="black"
-                onMouseDown={() => {
-                  console.log("clicked rect")
-                }}
-              />
-            )}
-
-            {shelves.map((value) => {
-              return (
-                <Shape
-                  key={value.id}
-                  sceneFunc={(context, shape) => {
-                    context.beginPath()
-                    const [first, ...positions] = value.position
-                    context.moveTo(first.x, first.y)
-                    positions.forEach((position) => context.lineTo(position.x, position.y))
-                    context.closePath()
-                    context.fillStrokeShape(shape)
-                  }}
-                  fill="#00D2FF"
-                  opacity={0.5}
-                  stroke="black"
-                  strokeWidth={4}
-                  onMouseDown={() => {
-                    onActivate(value.id)
-                  }}
-                />
-              )
-            })}
-            {activeShelf && (
-              <>
-                <Shape
-                  key={activeShelf.id}
-                  sceneFunc={(context, shape) => {
-                    context.beginPath()
-                    const [first, ...positions] = activeShelf.position
-                    context.moveTo(first.x, first.y)
-                    positions.forEach((position) => context.lineTo(position.x, position.y))
-                    context.closePath()
-                    context.fillStrokeShape(shape)
-                  }}
-                  fill="#00D2FF"
-                  opacity={1}
-                  stroke="black"
-                  strokeWidth={4}
-                  onMouseDown={() => {
-                    // onActivate(value.id)
-                  }}
-                />
-                {activeShelf.position.map((point) => (
-                  <Circle
-                    key={point.id}
-                    x={point.x}
-                    y={point.y}
-                    height={20}
-                    fill="#00D2FF"
-                    stroke="black"
-                    strokeWidth={4}
-                    onMouseDown={() => {
-                      setActivePointId(point.id)
-                      activePoint.current = true
-                    }}
-                  />
-                ))}
-              </>
-            )}
-            {/* <Image image={} /> */}
-          </Layer>
-        </Stage>
+        {pointer && activeShelf && (
+          <PreviewStage
+            pointer={pointer}
+            imageUrl={imageUrl}
+            newShelf={newShelf}
+            shelves={shelves}
+            activeShelf={activeShelf}
+          />
+        )}
       </div>
     </>
   )
