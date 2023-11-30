@@ -11,8 +11,10 @@ export type NewPoint = {
   yd: number
 }
 
+export type FourPoints = [Point, Point, Point, Point]
+
 export type Shelf = {
-  position: [Point, Point, Point, Point]
+  position: FourPoints
   id: string
 }
 

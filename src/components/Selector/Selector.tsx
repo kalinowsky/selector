@@ -1,34 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
-import { Circle, Image, Layer, Rect, Shape, Stage } from "react-konva"
-import Konva from "konva"
+import { Image } from "react-konva"
 import useImage from "use-image"
 import { PreviewStage } from "./PreviewStage"
-
-type Point = {
-  x: number
-  y: number
-  id: string
-}
-
-type NewPoint = {
-  x: number
-  y: number
-  xd: number
-  yd: number
-}
-
-type Shelf = {
-  position: [Point, Point, Point, Point]
-  id: string
-}
-
-type KonvaExtendedMouseEvent = MouseEvent & {
-  target: {
-    getStage: () => {
-      getPointerPosition: () => Point
-    }
-  }
-}
+import { KonvaEventObject } from "konva/lib/Node"
+import { MainStage } from "./MainStage"
+import { Vector2d } from "konva/lib/types"
+import { Point, Shelf, NewPoint, FourPoints } from "./types"
 
 export const Img = ({ url }: { url: string }) => {
   const [image] = useImage(url)
@@ -46,19 +23,22 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   const timer = useRef<number | null>(null)
   const activePoint = useRef<boolean>(false)
 
-  const handleMouseDown = (event: KonvaExtendedMouseEvent) => {
+  const handleMouseDown = (event: KonvaEventObject<MouseEvent>) => {
     if (activePoint.current) {
       setNewShelf(null)
       return
     }
     if (!newShelf) {
-      const { x, y } = event.target.getStage().getPointerPosition()
+      const stage = event.target.getStage()
+      if (!stage) return
+
+      const { x, y } = stage.getPointerPosition() as Vector2d
       setNewShelf({ x, y, xd: 0, yd: 0 })
       timer.current = new Date().getTime()
     }
   }
 
-  const handleMouseUp = (event: KonvaExtendedMouseEvent) => {
+  const handleMouseUp = (event: KonvaEventObject<MouseEvent>) => {
     if (timer.current === null) return
     activePoint.current = false
     const now = new Date().getTime()
@@ -75,7 +55,9 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
-      const { x, y } = event.target.getStage().getPointerPosition()
+      const stage = event.target.getStage()
+      if (!stage) return
+      const { x, y } = stage.getPointerPosition() as Vector2d
       const annotationToAdd: Shelf = {
         position: [
           { x, y, id: "1" },
@@ -91,17 +73,18 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     }
   }
 
-  const handleMouseMove = (event: KonvaExtendedMouseEvent) => {
+  const handleMouseMove = (event: KonvaEventObject<MouseEvent>) => {
     activePoint.current = false
+    const stage = event.target.getStage()
+    if (!stage) return
 
     if (activePointId) {
-      const stage = event.target.getStage()
-      const { x, y } = stage.getPointerPosition()
+      const { x, y } = stage.getPointerPosition() as Vector2d
       setPointer({ x, y, id: "" })
       if (activeShelf) {
-        setActiveShelf((shelf) => ({
-          ...shelf,
-          position: shelf?.position.map((point) =>
+        setActiveShelf({
+          ...activeShelf,
+          position: activeShelf.position.map((point) =>
             activePointId === point.id
               ? {
                   x,
@@ -109,15 +92,15 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
                   id: point.id,
                 }
               : point
-          ),
-        }))
+          ) as FourPoints,
+        })
         return
       }
     }
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
-      const { x, y } = event.target.getStage().getPointerPosition()
+      const { x, y } = stage.getPointerPosition() as Vector2d
       setNewShelf({
         x: sx,
         y: sy,
@@ -154,97 +137,21 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
   return (
     <>
-      <Stage
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        width={1000}
-        height={1000}
-      >
-        <Layer
-          onClick={() => {
-            if (activePointId) {
-              setActivePointId(null)
-            } else {
-              if (activeShelf) setShelves((shelves) => [...shelves, activeShelf])
-              setActiveShelf(null)
-              setActivePointId(null)
-            }
-          }}
-        >
-          <Img url={imageUrl} />
-          {newShelf && (
-            <Rect
-              x={newShelf.x}
-              y={newShelf.y}
-              width={newShelf.xd}
-              height={newShelf.yd}
-              fill="transparent"
-              stroke="black"
-              onMouseDown={() => {
-                console.log("clicked rect")
-              }}
-            />
-          )}
-
-          {shelves.map((value) => {
-            return (
-              <Shape
-                key={value.id}
-                sceneFunc={(context, shape) => {
-                  context.beginPath()
-                  const [first, ...positions] = value.position
-                  context.moveTo(first.x, first.y)
-                  positions.forEach((position) => context.lineTo(position.x, position.y))
-                  context.closePath()
-                  context.fillStrokeShape(shape)
-                }}
-                fill="#00D2FF"
-                opacity={0.5}
-                stroke="black"
-                strokeWidth={4}
-                onMouseDown={() => {
-                  onActivate(value.id)
-                }}
-              />
-            )
-          })}
-          {activeShelf && (
-            <>
-              <Shape
-                key={activeShelf.id}
-                sceneFunc={(context, shape) => {
-                  context.beginPath()
-                  const [first, ...positions] = activeShelf.position
-                  context.moveTo(first.x, first.y)
-                  positions.forEach((position) => context.lineTo(position.x, position.y))
-                  context.closePath()
-                  context.fillStrokeShape(shape)
-                }}
-                fill="#00D2FF"
-                opacity={1}
-                stroke="black"
-                strokeWidth={4}
-              />
-              {activeShelf.position.map((point) => (
-                <Circle
-                  key={point.id}
-                  x={point.x}
-                  y={point.y}
-                  height={20}
-                  fill="#00D2FF"
-                  stroke="black"
-                  strokeWidth={4}
-                  onMouseDown={() => {
-                    setActivePointId(point.id)
-                    activePoint.current = true
-                  }}
-                />
-              ))}
-            </>
-          )}
-        </Layer>
-      </Stage>
+      <MainStage
+        imageUrl={imageUrl}
+        newShelf={newShelf}
+        shelves={shelves}
+        activeShelf={activeShelf}
+        handleMouseDown={handleMouseDown}
+        handleMouseUp={handleMouseUp}
+        handleMouseMove={handleMouseMove}
+        activePointId={activePointId}
+        setActivePointId={setActivePointId}
+        setShelves={setShelves}
+        setActiveShelf={setActiveShelf}
+        onActivate={onActivate}
+        activePoint={activePoint}
+      />
       <div style={{ position: "absolute", top: "0", left: "0" }}>
         {pointer && activeShelf && (
           <PreviewStage
