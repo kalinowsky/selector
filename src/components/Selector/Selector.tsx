@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react"
-import ShelvesSelector from "./ShelvesSelector"
 import { Circle, Image, Layer, Rect, Shape, Stage } from "react-konva"
 import Konva from "konva"
 import useImage from "use-image"
@@ -47,12 +46,10 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
   const handleMouseDown = (event: KonvaExtendedMouseEvent) => {
     if (activePoint.current) {
-      console.log("point down")
       setNewShelf(null)
       return
     }
     if (!newShelf) {
-      console.log("2")
       const { x, y } = event.target.getStage().getPointerPosition()
       setNewShelf({ x, y, xd: 0, yd: 0 })
       timer.current = new Date().getTime()
@@ -73,11 +70,9 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
       setActivePointId(null)
       return
     }
-    // console.log({ activePoint })
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
-      // console.log({ sx, sy })
       const { x, y } = event.target.getStage().getPointerPosition()
       const annotationToAdd: Shelf = {
         position: [
@@ -93,8 +88,6 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
       setShelves(shelves)
     }
   }
-
-  console.log({ annotations: shelves })
 
   const handleMouseMove = (event: KonvaExtendedMouseEvent) => {
     activePoint.current = false
@@ -141,9 +134,7 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
-      console.log({ event })
       if (event.key === "Backspace") {
-        console.log("before remove: ", { activeShelf })
         event.preventDefault()
         if (activeShelf) setActiveShelf(null)
       }
@@ -156,8 +147,6 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     }
   }, [activeShelf])
 
-  console.log(activeShelf?.position)
-
   return (
     <Stage
       onMouseDown={handleMouseDown}
@@ -168,9 +157,13 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     >
       <Layer
         onClick={() => {
-          if (activeShelf) setShelves((shelves) => [...shelves, activeShelf])
-          setActiveShelf(null)
-          setActivePointId(null)
+          if (activePointId) {
+            setActivePointId(null)
+          } else {
+            if (activeShelf) setShelves((shelves) => [...shelves, activeShelf])
+            setActiveShelf(null)
+            setActivePointId(null)
+          }
         }}
       >
         <Img url={imageUrl} />
