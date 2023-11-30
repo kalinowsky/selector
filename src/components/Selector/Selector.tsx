@@ -7,6 +7,7 @@ import useImage from "use-image"
 type Point = {
   x: number
   y: number
+  id: string
 }
 
 type NewPoint = {
@@ -34,14 +35,24 @@ const Img = ({ url }: { url: string }) => {
   return <Image image={image} />
 }
 
+const getTsId = () => `${new Date().getTime()}`
+
 export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   const [shelves, setShelves] = useState<Shelf[]>([])
   const [activeShelf, setActiveShelf] = useState<Shelf | null>(null)
   const [newShelf, setNewShelf] = useState<NewPoint | null>(null)
+  const [activePointId, setActivePointId] = useState<string | null>(null)
   const timer = useRef<number | null>(null)
+  const activePoint = useRef<boolean>(false)
 
   const handleMouseDown = (event: KonvaExtendedMouseEvent) => {
+    if (activePoint.current) {
+      console.log("point down")
+      setNewShelf(null)
+      return
+    }
     if (!newShelf) {
+      console.log("2")
       const { x, y } = event.target.getStage().getPointerPosition()
       setNewShelf({ x, y, xd: 0, yd: 0 })
       timer.current = new Date().getTime()
@@ -50,6 +61,7 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
   const handleMouseUp = (event: KonvaExtendedMouseEvent) => {
     if (timer.current === null) return
+    activePoint.current = false
     const now = new Date().getTime()
     const diff = now - timer.current
     if (diff < 300) {
@@ -57,19 +69,24 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
       setNewShelf(null)
       return
     }
+    if (activePointId) {
+      setActivePointId(null)
+      return
+    }
+    // console.log({ activePoint })
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
-      console.log({ sx, sy })
+      // console.log({ sx, sy })
       const { x, y } = event.target.getStage().getPointerPosition()
       const annotationToAdd: Shelf = {
         position: [
-          { x, y },
-          { x, y: sy },
-          { x: sx, y: sy },
-          { x: sx, y },
+          { x, y, id: "1" },
+          { x, y: sy, id: "2" },
+          { x: sx, y: sy, id: "3" },
+          { x: sx, y, id: "4" },
         ],
-        id: `${new Date().getTime()}`,
+        id: getTsId(),
       }
       shelves.push(annotationToAdd)
       setNewShelf(null)
@@ -80,6 +97,25 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   console.log({ annotations: shelves })
 
   const handleMouseMove = (event: KonvaExtendedMouseEvent) => {
+    activePoint.current = false
+    if (activePointId) {
+      const { x, y } = event.target.getStage().getPointerPosition()
+      if (activeShelf) {
+        setActiveShelf((shelf) => ({
+          ...shelf,
+          position: shelf?.position.map((point) =>
+            activePointId === point.id
+              ? {
+                  x,
+                  y,
+                  id: point.id,
+                }
+              : point
+          ),
+        }))
+        return
+      }
+    }
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
@@ -107,6 +143,7 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     const keyDownHandler = (event: KeyboardEvent) => {
       console.log({ event })
       if (event.key === "Backspace") {
+        console.log("before remove: ", { activeShelf })
         event.preventDefault()
         if (activeShelf) setActiveShelf(null)
       }
@@ -117,7 +154,9 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     return () => {
       document.removeEventListener("keydown", keyDownHandler)
     }
-  }, [])
+  }, [activeShelf])
+
+  console.log(activeShelf?.position)
 
   return (
     <Stage
@@ -131,6 +170,7 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
         onClick={() => {
           if (activeShelf) setShelves((shelves) => [...shelves, activeShelf])
           setActiveShelf(null)
+          setActivePointId(null)
         }}
       >
         <Img url={imageUrl} />
@@ -148,7 +188,7 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
           />
         )}
 
-        {[...shelves].map((value) => {
+        {shelves.map((value) => {
           return (
             <Shape
               key={value.id}
@@ -191,7 +231,19 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
               }}
             />
             {activeShelf.position.map((point) => (
-              <Circle key="1" x={point.x} y={point.y} height={20} fill="#00D2FF" stroke="black" strokeWidth={4} />
+              <Circle
+                key={point.id}
+                x={point.x}
+                y={point.y}
+                height={20}
+                fill="#00D2FF"
+                stroke="black"
+                strokeWidth={4}
+                onMouseDown={() => {
+                  setActivePointId(point.id)
+                  activePoint.current = true
+                }}
+              />
             ))}
           </>
         )}
