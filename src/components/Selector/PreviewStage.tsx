@@ -1,6 +1,7 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
 import { NewPoint, Point, Shelf } from "./types"
 import { Img } from "./Img"
+import { getColorForIndex } from "../../helpers.ts/utils"
 
 type PreviewStageProps = {
   pointer: Point
@@ -25,7 +26,7 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({ pointer, imageUrl, n
         />
       )}
 
-      {shelves.map((value) => {
+      {shelves.map((value, index) => {
         return (
           <Shape
             key={value.id}
@@ -37,7 +38,7 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({ pointer, imageUrl, n
               context.closePath()
               context.fillStrokeShape(shape)
             }}
-            fill="#00D2FF"
+            fill={getColorForIndex(index)}
             opacity={0.5}
             stroke="black"
             strokeWidth={4}
@@ -56,8 +57,8 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({ pointer, imageUrl, n
               context.closePath()
               context.fillStrokeShape(shape)
             }}
-            fill="#00D2FF"
-            opacity={1}
+            fill="#FFFFFF"
+            opacity={0.7}
             stroke="black"
             strokeWidth={4}
           />

@@ -1,6 +1,7 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
 import { Img } from "./Img"
 import { NewPoint, Shelf, StageEvent } from "./types"
+import { getColorForIndex } from "../../helpers.ts/utils"
 
 type MainStageProps = {
   imageUrl: string
@@ -75,7 +76,7 @@ export const MainStage: React.FC<MainStageProps> = ({
         />
       )}
 
-      {shelves.map((value) => {
+      {shelves.map((value, index) => {
         return (
           <Shape
             key={value.id}
@@ -87,7 +88,7 @@ export const MainStage: React.FC<MainStageProps> = ({
               context.closePath()
               context.fillStrokeShape(shape)
             }}
-            fill="#00D2FF"
+            fill={getColorForIndex(index)}
             opacity={0.5}
             stroke="black"
             strokeWidth={4}
@@ -112,8 +113,8 @@ export const MainStage: React.FC<MainStageProps> = ({
               context.closePath()
               context.fillStrokeShape(shape)
             }}
-            fill="#00D2FF"
-            opacity={1}
+            fill={"#FFFFFF"}
+            opacity={0.7}
             stroke="black"
             strokeWidth={4}
           />
