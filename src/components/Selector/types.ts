@@ -1,3 +1,5 @@
+import { Stage } from "konva/lib/Stage"
+
 export type Point = {
   x: number
   y: number
@@ -23,5 +25,11 @@ export type KonvaExtendedMouseEvent = MouseEvent & {
     getStage: () => {
       getPointerPosition: () => Point
     }
+  }
+}
+
+export type StageEvent = {
+  target: {
+    getStage: () => Stage | null
   }
 }

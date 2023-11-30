@@ -1,16 +1,15 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
 import { Img } from "./Img"
-import { NewPoint, Shelf } from "./types"
-import { KonvaEventObject } from "konva/lib/Node"
+import { NewPoint, Shelf, StageEvent } from "./types"
 
 type MainStageProps = {
   imageUrl: string
   newShelf: NewPoint | null
   shelves: Shelf[]
   activeShelf: Shelf | null
-  handleMouseDown: (evt: KonvaEventObject<MouseEvent>) => void
-  handleMouseUp: (evt: KonvaEventObject<MouseEvent>) => void
-  handleMouseMove: (evt: KonvaEventObject<MouseEvent>) => void
+  handleStart: (evt: StageEvent) => void
+  handleEnd: (evt: StageEvent) => void
+  handleMove: (evt: StageEvent) => void
   activePointId: string | null
   setActivePointId: React.Dispatch<React.SetStateAction<string | null>>
   setShelves: React.Dispatch<React.SetStateAction<Shelf[]>>
@@ -24,9 +23,9 @@ export const MainStage: React.FC<MainStageProps> = ({
   newShelf,
   shelves,
   activeShelf,
-  handleMouseDown,
-  handleMouseUp,
-  handleMouseMove,
+  handleStart,
+  handleEnd,
+  handleMove,
   activePointId,
   setActivePointId,
   setShelves,
@@ -35,13 +34,25 @@ export const MainStage: React.FC<MainStageProps> = ({
   activePoint,
 }) => (
   <Stage
-    onMouseDown={handleMouseDown}
-    onMouseUp={handleMouseUp}
-    onMouseMove={handleMouseMove}
+    onMouseDown={handleStart}
+    onMouseMove={handleMove}
+    onMouseUp={handleEnd}
+    onTouchStart={handleStart}
+    onTouchMove={handleMove}
+    onTouchEnd={handleEnd}
     width={1000}
     height={1000}
   >
     <Layer
+      onTap={() => {
+        if (activePointId) {
+          setActivePointId(null)
+        } else {
+          if (activeShelf) setShelves((shelves) => [...shelves, activeShelf])
+          setActiveShelf(null)
+          setActivePointId(null)
+        }
+      }}
       onClick={() => {
         if (activePointId) {
           setActivePointId(null)
@@ -61,9 +72,6 @@ export const MainStage: React.FC<MainStageProps> = ({
           height={newShelf.yd}
           fill="transparent"
           stroke="black"
-          onMouseDown={() => {
-            console.log("clicked rect")
-          }}
         />
       )}
 
@@ -83,6 +91,9 @@ export const MainStage: React.FC<MainStageProps> = ({
             opacity={0.5}
             stroke="black"
             strokeWidth={4}
+            onTouchStart={() => {
+              onActivate(value.id)
+            }}
             onMouseDown={() => {
               onActivate(value.id)
             }}
@@ -115,6 +126,10 @@ export const MainStage: React.FC<MainStageProps> = ({
               fill="#00D2FF"
               stroke="black"
               strokeWidth={4}
+              onTouchStart={() => {
+                setActivePointId(point.id)
+                activePoint.current = true
+              }}
               onMouseDown={() => {
                 setActivePointId(point.id)
                 activePoint.current = true

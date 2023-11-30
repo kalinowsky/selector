@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { KonvaEventObject } from "konva/lib/Node"
 import { Vector2d } from "konva/lib/types"
-import { Point, Shelf, NewPoint, FourPoints } from "./types"
+import { Point, Shelf, NewPoint, FourPoints, StageEvent } from "./types"
 import { debounce } from "../../helpers.ts/debounce"
 import { getTsId } from "../../helpers.ts/utils"
 
@@ -10,6 +9,7 @@ type UseSelectorArgs = {
   initialShelves?: Shelf[]
   onChange: (shelves: Shelf[]) => void
 }
+
 export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   const [pointer, setPointer] = useState<Point | null>(null)
   const [shelves, setShelves] = useState<Shelf[]>(() => initialShelves || [])
@@ -20,7 +20,7 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   const activePoint = useRef<boolean>(false)
   const debouncedOnChange = useCallback(debounce(onChange, 200), [onChange])
 
-  const handleMouseDown = (event: KonvaEventObject<MouseEvent>) => {
+  const handleStart = (event: StageEvent) => {
     if (activePoint.current) {
       setNewShelf(null)
       return
@@ -35,20 +35,18 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
     }
   }
 
-  const handleMouseUp = (event: KonvaEventObject<MouseEvent>) => {
+  const handleEnd = (event: StageEvent) => {
     if (timer.current === null) return
     activePoint.current = false
     const now = new Date().getTime()
     const diff = now - timer.current
+
     if (diff < 200) {
       timer.current = null
       setNewShelf(null)
       return
     }
-    if (activePointId) {
-      setActivePointId(null)
-      return
-    }
+
     if (newShelf) {
       const sx = newShelf.x
       const sy = newShelf.y
@@ -70,7 +68,7 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
     }
   }
 
-  const handleMouseMove = (event: KonvaEventObject<MouseEvent>) => {
+  const handleMove = (event: StageEvent) => {
     activePoint.current = false
     const stage = event.target.getStage()
     if (!stage) return
@@ -139,9 +137,9 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   return {
     pointer,
     onActivate,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
+    handleStart,
+    handleMove,
+    handleEnd,
     newShelf,
     shelves,
     setShelves,

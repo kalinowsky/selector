@@ -15,18 +15,18 @@ type SelectorProps = {
 export const Selector: React.FC<SelectorProps> = ({ imageUrl, shelves: initialShelves, onChange }) => {
   const {
     pointer,
-    onActivate,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
     newShelf,
     shelves,
     activeShelf,
     activePointId,
+    activePoint,
+    onActivate,
+    handleStart,
+    handleMove,
+    handleEnd,
     setActivePointId,
     setShelves,
     setActiveShelf,
-    activePoint,
   } = useSelector({
     initialShelves,
     onChange,
@@ -38,9 +38,9 @@ export const Selector: React.FC<SelectorProps> = ({ imageUrl, shelves: initialSh
         newShelf={newShelf}
         shelves={shelves}
         activeShelf={activeShelf}
-        handleMouseDown={handleMouseDown}
-        handleMouseUp={handleMouseUp}
-        handleMouseMove={handleMouseMove}
+        handleStart={handleStart}
+        handleMove={handleMove}
+        handleEnd={handleEnd}
         activePointId={activePointId}
         setActivePointId={setActivePointId}
         setShelves={setShelves}
