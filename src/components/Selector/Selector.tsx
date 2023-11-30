@@ -1,19 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { Image } from "react-konva"
-import useImage from "use-image"
+
 import { PreviewStage } from "./PreviewStage"
 import { KonvaEventObject } from "konva/lib/Node"
 import { MainStage } from "./MainStage"
 import { Vector2d } from "konva/lib/types"
 import { Point, Shelf, NewPoint, FourPoints } from "./types"
 import { debounce } from "../../helpers.ts/debounce"
-
-export const Img = ({ url }: { url: string }) => {
-  const [image] = useImage(url)
-  return <Image image={image} />
-}
-
-const getTsId = () => `${new Date().getTime()}`
+import { getTsId } from "../../helpers.ts/utils"
 
 type SelectorProps = {
   imageUrl: string

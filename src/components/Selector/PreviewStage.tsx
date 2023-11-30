@@ -1,6 +1,6 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
 import { NewPoint, Point, Shelf } from "./types"
-import { Img } from "./Selector"
+import { Img } from "./Img"
 
 type PreviewStageProps = {
   pointer: Point

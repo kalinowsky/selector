@@ -1,5 +1,5 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
-import { Img } from "./Selector"
+import { Img } from "./Img"
 import { NewPoint, Shelf } from "./types"
 import { KonvaEventObject } from "konva/lib/Node"
 
