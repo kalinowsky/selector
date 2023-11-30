@@ -13,51 +13,15 @@ type SelectorProps = {
 }
 
 export const Selector: React.FC<SelectorProps> = ({ imageUrl, shelves: initialShelves, onChange }) => {
-  const {
-    pointer,
-    newShelf,
-    shelves,
-    activeShelf,
-    activePointId,
-    activePoint,
-    onActivate,
-    handleStart,
-    handleMove,
-    handleEnd,
-    setActivePointId,
-    setShelves,
-    setActiveShelf,
-  } = useSelector({
+  const { pointer, ...stageProps } = useSelector({
     initialShelves,
     onChange,
   })
   return (
     <>
-      <MainStage
-        imageUrl={imageUrl}
-        newShelf={newShelf}
-        shelves={shelves}
-        activeShelf={activeShelf}
-        handleStart={handleStart}
-        handleMove={handleMove}
-        handleEnd={handleEnd}
-        activePointId={activePointId}
-        setActivePointId={setActivePointId}
-        setShelves={setShelves}
-        setActiveShelf={setActiveShelf}
-        onActivate={onActivate}
-        activePoint={activePoint}
-      />
+      <MainStage imageUrl={imageUrl} {...stageProps} />
       <div style={{ position: "absolute", top: "0", left: "0" }}>
-        {pointer && activeShelf && (
-          <PreviewStage
-            pointer={pointer}
-            imageUrl={imageUrl}
-            newShelf={newShelf}
-            shelves={shelves}
-            activeShelf={activeShelf}
-          />
-        )}
+        {pointer && stageProps.activeShelf && <PreviewStage imageUrl={imageUrl} {...stageProps} pointer={pointer} />}
       </div>
     </>
   )
