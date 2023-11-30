@@ -34,7 +34,7 @@ const Img = ({ url }: { url: string }) => {
   return <Image image={image} />
 }
 
-const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
+export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   const [shelves, setShelves] = useState<Shelf[]>([])
   const [activeShelf, setActiveShelf] = useState<Shelf | null>(null)
   const [newShelf, setNewShelf] = useState<NewPoint | null>(null)
@@ -94,11 +94,30 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
   }
 
   const onActivate = (shelfId: string) => {
-    const activeShelf = shelves.find((s) => s.id === shelfId)
-    if (!activeShelf) return
+    const newActiveShelf = shelves.find((s) => s.id === shelfId)
+    if (!newActiveShelf) return
+    if (activeShelf && activeShelf.id !== newActiveShelf.id) {
+      setShelves((shelves) => [...shelves, activeShelf])
+    }
     setShelves((shelves) => shelves.filter((s) => s.id !== shelfId))
-    setActiveShelf(activeShelf)
+    setActiveShelf(newActiveShelf)
   }
+
+  useEffect(() => {
+    const keyDownHandler = (event: KeyboardEvent) => {
+      console.log({ event })
+      if (event.key === "Backspace") {
+        event.preventDefault()
+        if (activeShelf) setActiveShelf(null)
+      }
+    }
+
+    document.addEventListener("keydown", keyDownHandler)
+
+    return () => {
+      document.removeEventListener("keydown", keyDownHandler)
+    }
+  }, [])
 
   return (
     <Stage
@@ -128,7 +147,8 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
             }}
           />
         )}
-        {[...shelves, ...(activeShelf ? [activeShelf] : [])].map((value) => {
+
+        {[...shelves].map((value) => {
           return (
             <Shape
               key={value.id}
@@ -151,28 +171,31 @@ const ShelvesSelector2: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
           )
         })}
         {activeShelf && (
-          <Shape
-            key={activeShelf.id}
-            sceneFunc={(context, shape) => {
-              context.beginPath()
-              const [first, ...positions] = activeShelf.position
-              context.moveTo(first.x, first.y)
-              positions.forEach((position) => context.lineTo(position.x, position.y))
-              context.closePath()
-              context.fillStrokeShape(shape)
-            }}
-            fill="#00D2FF"
-            opacity={1}
-            stroke="black"
-            strokeWidth={4}
-            onMouseDown={() => {
-              // onActivate(value.id)
-            }}
-          />
+          <>
+            <Shape
+              key={activeShelf.id}
+              sceneFunc={(context, shape) => {
+                context.beginPath()
+                const [first, ...positions] = activeShelf.position
+                context.moveTo(first.x, first.y)
+                positions.forEach((position) => context.lineTo(position.x, position.y))
+                context.closePath()
+                context.fillStrokeShape(shape)
+              }}
+              fill="#00D2FF"
+              opacity={1}
+              stroke="black"
+              strokeWidth={4}
+              onMouseDown={() => {
+                // onActivate(value.id)
+              }}
+            />
+            {activeShelf.position.map((point) => (
+              <Circle key="1" x={point.x} y={point.y} height={20} fill="#00D2FF" stroke="black" strokeWidth={4} />
+            ))}
+          </>
         )}
       </Layer>
     </Stage>
   )
 }
-
-export default ShelvesSelector2
