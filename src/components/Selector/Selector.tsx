@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { Image } from "react-konva"
 import useImage from "use-image"
 import { PreviewStage } from "./PreviewStage"
@@ -6,6 +6,7 @@ import { KonvaEventObject } from "konva/lib/Node"
 import { MainStage } from "./MainStage"
 import { Vector2d } from "konva/lib/types"
 import { Point, Shelf, NewPoint, FourPoints } from "./types"
+import { debounce } from "../../helpers.ts/debounce"
 
 export const Img = ({ url }: { url: string }) => {
   const [image] = useImage(url)
@@ -14,14 +15,21 @@ export const Img = ({ url }: { url: string }) => {
 
 const getTsId = () => `${new Date().getTime()}`
 
-export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
+type SelectorProps = {
+  imageUrl: string
+  shelves?: Shelf[]
+  onChange: (shelves: Shelf[]) => void
+}
+
+export const Selector: React.FC<SelectorProps> = ({ imageUrl, shelves: initialShelves, onChange }) => {
   const [pointer, setPointer] = useState<Point | null>(null)
-  const [shelves, setShelves] = useState<Shelf[]>([])
+  const [shelves, setShelves] = useState<Shelf[]>(() => initialShelves || [])
   const [activeShelf, setActiveShelf] = useState<Shelf | null>(null)
   const [newShelf, setNewShelf] = useState<NewPoint | null>(null)
   const [activePointId, setActivePointId] = useState<string | null>(null)
   const timer = useRef<number | null>(null)
   const activePoint = useRef<boolean>(false)
+  const debouncedOnChange = useCallback(debounce(onChange, 200), [onChange])
 
   const handleMouseDown = (event: KonvaEventObject<MouseEvent>) => {
     if (activePoint.current) {
@@ -43,7 +51,7 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     activePoint.current = false
     const now = new Date().getTime()
     const diff = now - timer.current
-    if (diff < 300) {
+    if (diff < 200) {
       timer.current = null
       setNewShelf(null)
       return
@@ -134,6 +142,10 @@ export const Selector: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
       document.removeEventListener("keydown", keyDownHandler)
     }
   }, [activeShelf])
+
+  useEffect(() => {
+    debouncedOnChange(activeShelf ? [...shelves, activeShelf] : shelves)
+  }, [shelves.length, activeShelf])
 
   return (
     <>
