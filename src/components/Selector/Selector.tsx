@@ -5,6 +5,7 @@ import { MainStage } from "./MainStage"
 import { Shelf } from "./types"
 
 import { useSelector } from "./useSelector"
+import { TrashIcon } from "../Trash"
 
 type SelectorProps = {
   imageUrl: string
@@ -17,12 +18,28 @@ export const Selector: React.FC<SelectorProps> = ({ imageUrl, shelves: initialSh
     initialShelves,
     onChange,
   })
+
   return (
     <>
       <MainStage imageUrl={imageUrl} {...stageProps} />
-      <div style={{ position: "absolute", top: "0", left: "0" }}>
+      <div style={{ position: "fixed", top: "0", left: "0" }}>
         {pointer && stageProps.activeShelf && <PreviewStage imageUrl={imageUrl} {...stageProps} pointer={pointer} />}
       </div>
+      {stageProps.activeShelf && !stageProps.activePointId && (
+        <button
+          style={{
+            position: "fixed",
+            top: "0",
+            right: "0",
+            width: "100px",
+            height: "100px",
+            backgroundColor: "#AA2222",
+          }}
+          onClick={() => stageProps.setActiveShelf(null)}
+        >
+          <TrashIcon />
+        </button>
+      )}
     </>
   )
 }

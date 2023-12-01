@@ -52,7 +52,7 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
 
   useEffect(() => {
     debouncedOnChange(activeShelf ? [...shelves, activeShelf] : shelves)
-  }, [shelves.length, activeShelf])
+  }, [shelves, activeShelf])
 
   const handleStart = (event: StageEvent) => {
     if (!newShelf) {
