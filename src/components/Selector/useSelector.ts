@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect } from "react"
 
 import { Vector2d } from "konva/lib/types"
 import { Point, Shelf, NewPoint, FourPoints, StageEvent } from "./types"
@@ -33,7 +33,6 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   const { state, setDelta, getSetState } = useDeltaState<State>(getInitialData(initialShelves))
   const { pointer, shelves, activeShelf, newShelf, activePointId, timer } = state
 
-  const activePoint = useRef<boolean>(false)
   const debouncedOnChange = useCallback(debounce(onChange, 200), [onChange])
 
   useEffect(() => {
@@ -56,10 +55,6 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   }, [shelves.length, activeShelf])
 
   const handleStart = (event: StageEvent) => {
-    if (activePoint.current) {
-      setDelta({ newShelf: null })
-      return
-    }
     if (!newShelf) {
       const stage = event.target.getStage()
       if (!stage) return
@@ -72,7 +67,6 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
 
   const handleEnd = (event: StageEvent) => {
     if (timer === null || newShelf === null) return
-    activePoint.current = false
     const now = new Date().getTime()
 
     if (now - timer < 200) {
@@ -107,13 +101,12 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   }
 
   const handleMove = (event: StageEvent) => {
-    activePoint.current = false
     const stage = event.target.getStage()
     if (!stage) return
 
     if (activePointId) {
       const { x, y } = stage.getPointerPosition() as Vector2d
-      setDelta({ pointer: { x, y, id: "" } })
+      setDelta({ pointer: { x, y, id: "" }, newShelf: null })
       if (activeShelf) {
         const activeShelfToSet = {
           ...activeShelf,
@@ -171,6 +164,5 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
     activePointId,
     setActivePointId,
     setActiveShelf,
-    activePoint,
   }
 }

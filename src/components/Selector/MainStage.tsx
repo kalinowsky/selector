@@ -16,7 +16,6 @@ type MainStageProps = {
   setShelves: React.Dispatch<React.SetStateAction<Shelf[]>>
   setActiveShelf: React.Dispatch<React.SetStateAction<Shelf | null>>
   onActivate: (shelfId: string) => void
-  activePoint: React.MutableRefObject<boolean>
 }
 
 export const MainStage: React.FC<MainStageProps> = ({
@@ -32,7 +31,6 @@ export const MainStage: React.FC<MainStageProps> = ({
   setShelves,
   setActiveShelf,
   onActivate,
-  activePoint,
 }) => (
   <Stage
     onMouseDown={handleStart}
@@ -129,11 +127,9 @@ export const MainStage: React.FC<MainStageProps> = ({
               strokeWidth={4}
               onTouchStart={() => {
                 setActivePointId(point.id)
-                activePoint.current = true
               }}
               onMouseDown={() => {
                 setActivePointId(point.id)
-                activePoint.current = true
               }}
             />
           ))}
