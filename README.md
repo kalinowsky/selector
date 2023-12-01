@@ -4,6 +4,12 @@
 
 Used React + konva / react-konva libraries
 
-Commands:
-`pnpm i` - install dependencies
-`pnpm dev` - run dev
+#### Recommended
+
+- node 16+
+- pnpm 8.6.10+
+
+#### Commands:
+
+- `pnpm i` - install dependencies
+- `pnpm dev` - run dev
