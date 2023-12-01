@@ -1,7 +1,7 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
-import { Img } from "../Img"
 import { NewPoint, Shelf, StageEvent } from "./types"
 import { getColorForIndex } from "../../helpers.ts/utils"
+import { Img } from "../Img"
 
 type MainStageProps = {
   imageUrl: string

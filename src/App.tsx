@@ -31,8 +31,8 @@ const App = () => {
     <Selector
       imageUrl={IMAGE_URL}
       shelves={INITIAL_SHALVES}
-      onChange={(v) => {
-        console.log({ v })
+      onChange={(onChangeValue) => {
+        console.log({ onChangeValue })
       }}
     />
   )
