@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Vector2d } from "konva/lib/types"
 import { Point, Shelf, NewPoint, FourPoints, StageEvent } from "./types"
 import { debounce } from "../../helpers.ts/debounce"
-import { getTsId } from "../../helpers.ts/utils"
+import { ensureSufficientSize, getTsId } from "../../helpers.ts/utils"
 
 type UseSelectorArgs = {
   initialShelves?: Shelf[]
@@ -36,7 +36,7 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
   }
 
   const handleEnd = (event: StageEvent) => {
-    if (timer.current === null) return
+    if (timer.current === null || newShelf === null) return
     activePoint.current = false
     const now = new Date().getTime()
     const diff = now - timer.current
@@ -47,25 +47,33 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
       return
     }
 
-    if (newShelf) {
-      const sx = newShelf.x
-      const sy = newShelf.y
-      const stage = event.target.getStage()
-      if (!stage) return
-      const { x, y } = stage.getPointerPosition() as Vector2d
-      const annotationToAdd: Shelf = {
-        position: [
-          { x, y, id: "1" },
-          { x, y: sy, id: "2" },
-          { x: sx, y: sy, id: "3" },
-          { x: sx, y, id: "4" },
-        ],
-        id: getTsId(),
-      }
-      shelves.push(annotationToAdd)
+    const sx = newShelf.x
+    const sy = newShelf.y
+
+    const stage = event.target.getStage()
+    if (!stage) return
+
+    const { x, y } = stage.getPointerPosition() as Vector2d
+
+    const isSufficientSize = ensureSufficientSize(x, sx, y, sy)
+    if (!isSufficientSize) {
+      timer.current = null
       setNewShelf(null)
-      setShelves(shelves)
+      return
     }
+
+    const annotationToAdd: Shelf = {
+      position: [
+        { x, y, id: "1" },
+        { x, y: sy, id: "2" },
+        { x: sx, y: sy, id: "3" },
+        { x: sx, y, id: "4" },
+      ],
+      id: getTsId(),
+    }
+    shelves.push(annotationToAdd)
+    setNewShelf(null)
+    setShelves(shelves)
   }
 
   const handleMove = (event: StageEvent) => {
