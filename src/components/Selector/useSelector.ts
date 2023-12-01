@@ -74,9 +74,8 @@ export const useSelector = ({ initialShelves, onChange }: UseSelectorArgs) => {
     if (timer === null || newShelf === null) return
     activePoint.current = false
     const now = new Date().getTime()
-    const diff = now - (timer || 0)
 
-    if (diff < 200) {
+    if (now - timer < 200) {
       setDelta({ timer: null, newShelf: null })
       return
     }
