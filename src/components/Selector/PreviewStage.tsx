@@ -1,7 +1,8 @@
 import { Stage, Layer, Rect, Shape, Circle } from "react-konva"
 import { NewPoint, Point, Shelf } from "./types"
 import { Img } from "../Img"
-import { getColorForIndex } from "../../helpers.ts/utils"
+import { getColorForIndex } from "../../helpers/utils"
+import { drawShape } from "../../helpers/draw"
 
 type PreviewStageProps = {
   pointer: Point
@@ -30,14 +31,7 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({ pointer, imageUrl, n
         return (
           <Shape
             key={value.id}
-            sceneFunc={(context, shape) => {
-              context.beginPath()
-              const [first, ...positions] = value.position
-              context.moveTo(first.x, first.y)
-              positions.forEach((position) => context.lineTo(position.x, position.y))
-              context.closePath()
-              context.fillStrokeShape(shape)
-            }}
+            sceneFunc={(context, shape) => drawShape(context, shape, value.position)}
             fill={getColorForIndex(index)}
             opacity={0.5}
             stroke="black"
@@ -49,14 +43,7 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({ pointer, imageUrl, n
         <>
           <Shape
             key={activeShelf.id}
-            sceneFunc={(context, shape) => {
-              context.beginPath()
-              const [first, ...positions] = activeShelf.position
-              context.moveTo(first.x, first.y)
-              positions.forEach((position) => context.lineTo(position.x, position.y))
-              context.closePath()
-              context.fillStrokeShape(shape)
-            }}
+            sceneFunc={(context, shape) => drawShape(context, shape, activeShelf.position)}
             fill="#FFFFFF"
             opacity={0.7}
             stroke="black"

@@ -2,8 +2,8 @@ import { useCallback, useEffect } from "react"
 
 import { Vector2d } from "konva/lib/types"
 import { Point, Shelf, NewPoint, FourPoints, StageEvent } from "./types"
-import { debounce } from "../../helpers.ts/debounce"
-import { ensureSufficientSize, getTsId } from "../../helpers.ts/utils"
+import { debounce } from "../../helpers/debounce"
+import { ensureSufficientSize, getTsId } from "../../helpers/utils"
 import { useDeltaState } from "../../hooks/useDeltaState"
 
 type UseSelectorArgs = {
