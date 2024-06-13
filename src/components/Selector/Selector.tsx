@@ -23,7 +23,9 @@ export const Selector: React.FC<SelectorProps> = ({ imageUrl, shelves: initialSh
     <>
       <MainStage imageUrl={imageUrl} {...stageProps} />
       <div style={{ position: "fixed", top: "0", left: "0" }}>
-        {pointer && stageProps.activeShelf && <PreviewStage imageUrl={imageUrl} {...stageProps} pointer={pointer} />}
+        {pointer && stageProps.activeShelf && stageProps.activePointId && (
+          <PreviewStage imageUrl={imageUrl} {...stageProps} pointer={pointer} />
+        )}
       </div>
       {stageProps.activeShelf && !stageProps.activePointId && (
         <button
